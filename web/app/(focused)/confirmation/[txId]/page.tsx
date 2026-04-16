@@ -1,18 +1,22 @@
 "use client";
 
+import { Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { ExternalLink, CheckCircle, ArrowRight } from "lucide-react";
 import { txUrl } from "@/lib/solana";
 
-export default function ConfirmationPage({ params }: { params: { txId: string } }) {
+function ConfirmationContent({ txSig }: { txSig: string }) {
   const searchParams = useSearchParams();
   const blockHeight = searchParams.get("blockHeight") ?? "312847291";
-  const rating = searchParams.get("rating") ?? "5";
-  const txSig = params.txId;
+  const rating = Number(searchParams.get("rating") ?? "5");
   const timestamp = new Date().toLocaleString("en-US", {
-    month: "short", day: "numeric", year: "numeric", hour: "2-digit", minute: "2-digit",
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 
   return (
@@ -29,8 +33,14 @@ export default function ConfirmationPage({ params }: { params: { txId: string } 
           animate={{ scale: 1, rotate: 0 }}
           transition={{ duration: 0.5, delay: 0.2, type: "spring", stiffness: 200 }}
         >
-          <div className="w-20 h-20 rounded-full flex items-center justify-center"
-            style={{ background: "linear-gradient(135deg, rgba(232,184,109,0.2), rgba(232,184,109,0.05))", border: "1px solid rgba(232,184,109,0.4)" }}>
+          <div
+            className="w-20 h-20 rounded-full flex items-center justify-center"
+            style={{
+              background:
+                "linear-gradient(135deg, rgba(232,184,109,0.2), rgba(232,184,109,0.05))",
+              border: "1px solid rgba(232,184,109,0.4)",
+            }}
+          >
             <CheckCircle size={40} className="text-amber-primary" strokeWidth={1.5} />
           </div>
         </motion.div>
@@ -40,7 +50,8 @@ export default function ConfirmationPage({ params }: { params: { txId: string } 
             Attestation recorded on-chain ✦
           </h1>
           <p className="text-text-muted font-inter leading-relaxed">
-            Your review is now permanent on Solana. It will forever shape this agent&apos;s reputation.
+            Your review is now permanent on Solana. It will forever shape this agent&apos;s
+            reputation.
           </p>
         </div>
 
@@ -55,22 +66,33 @@ export default function ConfirmationPage({ params }: { params: { txId: string } 
           <div className="flex items-center justify-between mb-1">
             <span
               className="px-3 py-1 rounded-full text-xs font-semibold font-inter flex items-center gap-1.5"
-              style={{ background: "rgba(232,184,109,0.15)", color: "#E8B86D", border: "1px solid rgba(232,184,109,0.3)" }}
+              style={{
+                background: "rgba(232,184,109,0.15)",
+                color: "#E8B86D",
+                border: "1px solid rgba(232,184,109,0.3)",
+              }}
             >
               ✦ Verified on-chain
             </span>
-            <span className="text-amber-primary font-grotesk font-semibold">{"★".repeat(Number(rating))}</span>
+            <span className="text-amber-primary font-grotesk font-semibold">
+              {"★".repeat(rating)}
+            </span>
           </div>
 
           {[
-            { label: "Transaction", value: `${txSig.slice(0, 20)}…${txSig.slice(-8)}` },
+            {
+              label: "Transaction",
+              value: `${txSig.slice(0, 20)}…${txSig.slice(-8)}`,
+            },
             { label: "Block Height", value: Number(blockHeight).toLocaleString() },
             { label: "Network", value: "Solana Devnet" },
             { label: "Timestamp", value: timestamp },
           ].map((row) => (
             <div key={row.label} className="flex justify-between gap-4 text-sm">
               <span className="text-text-muted font-inter">{row.label}</span>
-              <span className="text-text-primary font-inter font-mono text-right break-all">{row.value}</span>
+              <span className="text-text-primary font-inter font-mono text-right break-all">
+                {row.value}
+              </span>
             </div>
           ))}
 
@@ -115,5 +137,19 @@ export default function ConfirmationPage({ params }: { params: { txId: string } 
         </motion.div>
       </motion.div>
     </div>
+  );
+}
+
+export default function ConfirmationPage({ params }: { params: { txId: string } }) {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="w-8 h-8 border-2 border-amber-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      }
+    >
+      <ConfirmationContent txSig={params.txId} />
+    </Suspense>
   );
 }

@@ -34,7 +34,7 @@ export default function SessionClient({ agent, sessionId }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState("");
   const [isStreaming, setIsStreaming] = useState(false);
-  const [startTime] = useState(Date.now);
+  const [startTime] = useState(() => Date.now());
   const elapsed = useElapsedTime(startTime);
   const bottomRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLTextAreaElement>(null);
