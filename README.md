@@ -64,4 +64,4 @@ AI is not a tool we command. It is a partner we build with.
 
 ---
 
-*Day 1: April 16, 2026. Building in public.
+*Day 1: April 16, 2026. Building in public.*
