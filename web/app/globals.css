@@ -1,0 +1,79 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --background: #0B1426;
+  --foreground: #F0EFE8;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter), system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Wallet adapter UI overrides */
+.wallet-adapter-button {
+  display: none !important;
+}
+
+.wallet-adapter-modal-wrapper {
+  background: #142850 !important;
+  border: 1px solid rgba(42, 82, 152, 0.4) !important;
+  border-radius: 16px !important;
+}
+
+.wallet-adapter-modal-title {
+  color: #F0EFE8 !important;
+  font-family: var(--font-space-grotesk), sans-serif !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button {
+  display: flex !important;
+  background: rgba(30, 58, 110, 0.6) !important;
+  border: 1px solid rgba(42, 82, 152, 0.3) !important;
+  border-radius: 12px !important;
+  color: #F0EFE8 !important;
+}
+
+.wallet-adapter-modal-list .wallet-adapter-button:hover {
+  background: rgba(42, 82, 152, 0.5) !important;
+  border-color: rgba(61, 126, 232, 0.5) !important;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #0B1426;
+}
+::-webkit-scrollbar-thumb {
+  background: #2A5298;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #3D7EE8;
+}
+
+/* Selection */
+::selection {
+  background: rgba(232, 184, 109, 0.25);
+  color: #F0EFE8;
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+  .font-600 {
+    font-weight: 600;
+  }
+}
