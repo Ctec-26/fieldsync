@@ -12,13 +12,16 @@ import {
   ExternalLink,
   ArrowLeft,
   Zap,
+  AlertCircle,
 } from "lucide-react";
 import AgentAvatar from "@/components/agents/AgentAvatar";
 import type { Agent } from "@/types/agent";
 import type { Attestation } from "@/types/attestation";
-import { txUrl } from "@/lib/solana";
+import { txUrl, getConnection } from "@/lib/solana";
 import { useWallet } from "@solana/wallet-adapter-react";
 import { useWalletModal } from "@solana/wallet-adapter-react-ui";
+import { payForSession } from "@/lib/session-payment";
+import type { AnchorWallet } from "@/lib/anchor-client";
 
 function StarDisplay({ score }: { score: number }) {
   return (
@@ -94,16 +97,39 @@ export default function AgentProfileClient({ agent, attestations }: Props) {
   const [introIdx] = useState(() =>
     Math.floor(Math.random() * agent.introVariants.length)
   );
-  const { publicKey } = useWallet();
+  const [paying, setPaying] = useState(false);
+  const [payError, setPayError] = useState<string | null>(null);
+  const { publicKey, signTransaction, signAllTransactions } = useWallet();
   const { setVisible } = useWalletModal();
 
-  const handleStartSession = () => {
+  const handleStartSession = async () => {
+    const sessionId = `sess-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
+
+    // BlockBrain agents are free — no wallet or payment needed
+    if (agent.isFree) {
+      window.location.href = `/session/${agent.id}/${sessionId}`;
+      return;
+    }
+
     if (!publicKey) {
       setVisible(true);
       return;
     }
-    const sessionId = `sess-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    window.location.href = `/session/${agent.id}/${sessionId}`;
+    setPayError(null);
+    setPaying(true);
+    try {
+      const wallet: AnchorWallet = {
+        publicKey,
+        signTransaction: signTransaction!,
+        signAllTransactions: signAllTransactions!,
+      };
+      await payForSession(getConnection(), wallet, agent.id, sessionId);
+      window.location.href = `/session/${agent.id}/${sessionId}`;
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setPayError(msg.includes("custom program error") ? "Transaction failed — programs may not be deployed yet." : msg);
+      setPaying(false);
+    }
   };
 
   return (
@@ -117,11 +143,11 @@ export default function AgentProfileClient({ agent, attestations }: Props) {
           className="pt-6 mb-8"
         >
           <Link
-            href="/agents"
+            href={agent.isFree ? "/agents?tab=blockbrain" : "/agents"}
             className="inline-flex items-center gap-2 text-text-muted hover:text-text-primary font-inter text-sm transition-colors"
           >
             <ArrowLeft size={15} strokeWidth={1.5} />
-            Back to Agents
+            {agent.isFree ? "Back to BlockBrain" : "Back to Agents"}
           </Link>
         </motion.div>
 
@@ -241,37 +267,84 @@ export default function AgentProfileClient({ agent, attestations }: Props) {
             >
               <div>
                 <p className="text-text-muted text-xs font-inter mb-1">Per session</p>
-                <p className="text-amber-primary font-grotesk font-bold text-3xl">
-                  {agent.priceSOL} SOL
-                </p>
+                {agent.isFree ? (
+                  <span
+                    className="inline-flex items-center gap-1.5 text-2xl font-grotesk font-bold"
+                    style={{ color: "#2DD4BF" }}
+                  >
+                    ✦ Free
+                  </span>
+                ) : (
+                  <p className="text-amber-primary font-grotesk font-bold text-3xl">
+                    {agent.priceSOL} SOL
+                  </p>
+                )}
               </div>
 
               <div className="flex flex-col gap-2 text-sm font-inter text-text-muted">
                 <div className="flex items-center gap-2">
-                  <Zap size={13} className="text-amber-primary" strokeWidth={1.5} />
+                  <Zap size={13} className={agent.isFree ? "text-teal-400" : "text-amber-primary"} strokeWidth={1.5} />
                   Up to 20 messages or 30 minutes
                 </div>
                 <div className="flex items-center gap-2">
-                  <Shield size={13} className="text-amber-primary" strokeWidth={1.5} />
-                  Attestation recorded on-chain
+                  <Shield size={13} className={agent.isFree ? "text-teal-400" : "text-amber-primary"} strokeWidth={1.5} />
+                  {agent.isFree ? "Optional on-chain attestation" : "Attestation recorded on-chain"}
                 </div>
               </div>
 
               <motion.button
-                whileHover={{ scale: 1.03, boxShadow: "0 0 24px rgba(232,184,109,0.35)" }}
-                whileTap={{ scale: 0.97 }}
+                whileHover={!paying ? { scale: 1.03, boxShadow: agent.isFree ? "0 0 24px rgba(45,212,191,0.3)" : "0 0 24px rgba(232,184,109,0.35)" } : {}}
+                whileTap={!paying ? { scale: 0.97 } : {}}
                 onClick={handleStartSession}
-                className="w-full py-3.5 rounded-xl font-grotesk font-semibold text-navy-deepest transition-all"
-                style={{ background: "linear-gradient(135deg, #E8B86D, #F5D29A)" }}
+                disabled={paying}
+                className="w-full py-3.5 rounded-xl font-grotesk font-semibold text-navy-deepest transition-all disabled:opacity-60 disabled:cursor-not-allowed"
+                style={{
+                  background: agent.isFree
+                    ? "linear-gradient(135deg, #2DD4BF, #5EEAD4)"
+                    : "linear-gradient(135deg, #E8B86D, #F5D29A)",
+                }}
               >
-                Start Session
+                {paying ? (
+                  <span className="flex items-center justify-center gap-2">
+                    <motion.span
+                      animate={{ rotate: 360 }}
+                      transition={{ duration: 0.8, repeat: Infinity, ease: "linear" }}
+                      className="w-4 h-4 border-2 border-navy-deepest border-t-transparent rounded-full block"
+                    />
+                    Approving payment…
+                  </span>
+                ) : agent.isFree ? (
+                  "Start Free Session"
+                ) : (
+                  "Start Session"
+                )}
               </motion.button>
 
+              {payError && (
+                <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+                  <AlertCircle size={13} className="text-red-400 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+                  <p className="text-red-400 text-[11px] font-inter leading-relaxed">{payError}</p>
+                </div>
+              )}
+
               <p className="text-text-muted text-[11px] font-inter text-center leading-relaxed">
-                {publicKey
-                  ? "Payment required. Attestation recorded after completion."
+                {agent.isFree
+                  ? "No wallet required. Jump in and start learning."
+                  : publicKey
+                  ? "0.05 SOL payment required. Attestation recorded after completion."
                   : "Connect your Phantom wallet to start a session."}
               </p>
+
+              {/* Cross-navigation */}
+              <div className="pt-2 border-t border-navy-accent/20">
+                <Link
+                  href={agent.isFree ? "/agents" : "/agents?tab=blockbrain"}
+                  className="block text-center text-[11px] font-inter transition-colors hover:underline"
+                  style={{ color: agent.isFree ? "#E8B86D" : "#2DD4BF" }}
+                >
+                  {agent.isFree ? "Want the full experience? Browse Marketplace →" : "Learn first? Try BlockBrain free →"}
+                </Link>
+              </div>
             </motion.div>
           </div>
         </div>

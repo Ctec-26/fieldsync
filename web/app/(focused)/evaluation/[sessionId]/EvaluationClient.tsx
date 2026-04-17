@@ -3,30 +3,77 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Star, Shield, Lock } from "lucide-react";
+import { Star, Shield, Lock, AlertCircle } from "lucide-react";
 import FieldSyncLogo from "@/components/ui/FieldSyncLogo";
-import { generateMockTxSignature, generateMockBlockHeight } from "@/lib/solana";
+import { useWallet } from "@solana/wallet-adapter-react";
+import { getConnection } from "@/lib/solana";
+import { submitAttestation } from "@/lib/submit-attestation";
+import type { AnchorWallet } from "@/lib/anchor-client";
 
-export default function EvaluationClient() {
+interface Props {
+  sessionId: string;
+  agentId: string;
+  agentType?: 0 | 1;
+}
+
+export default function EvaluationClient({ sessionId, agentId, agentType = 0 }: Props) {
   const router = useRouter();
   const [rating, setRating] = useState(0);
   const [hovered, setHovered] = useState(0);
   const [comment, setComment] = useState("");
   const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const { publicKey, signTransaction, signAllTransactions } = useWallet();
+
+  const isFree = agentType === 1;
 
   const handleSubmit = async () => {
     if (rating === 0 || submitting) return;
+    setError(null);
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 1400));
-    const txId = generateMockTxSignature();
-    router.push(`/confirmation/${txId}?blockHeight=${generateMockBlockHeight()}&rating=${rating}`);
+
+    // BlockBrain without wallet — skip on-chain, go to confirmation with mock sig
+    if (isFree && !publicKey) {
+      const mockSig = Array.from({ length: 64 }, () =>
+        "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz123456789"[
+          Math.floor(Math.random() * 58)
+        ]
+      ).join("");
+      const slot = 312_800_000 + Math.floor(Math.random() * 200_000);
+      router.push(`/confirmation/${mockSig}?blockHeight=${slot}&rating=${rating}`);
+      return;
+    }
+
+    if (!publicKey) return;
+
+    try {
+      const wallet: AnchorWallet = {
+        publicKey,
+        signTransaction: signTransaction!,
+        signAllTransactions: signAllTransactions!,
+      };
+      const txSig = await submitAttestation(
+        getConnection(),
+        wallet,
+        agentId,
+        sessionId,
+        rating,
+        comment,
+        agentType
+      );
+      const slot = await getConnection().getSlot("confirmed");
+      router.push(`/confirmation/${txSig}?blockHeight=${slot}&rating=${rating}`);
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : String(err);
+      setError(msg.includes("custom program error") ? "On-chain submission failed — programs may not be deployed yet." : msg);
+      setSubmitting(false);
+    }
   };
 
   const activeStars = hovered || rating;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center p-4">
-      {/* No navigation escape — just logo */}
       <div className="absolute top-5 left-6">
         <FieldSyncLogo />
       </div>
@@ -41,7 +88,6 @@ export default function EvaluationClient() {
           className="rounded-2xl border border-navy-accent/30 p-8 flex flex-col gap-6"
           style={{ background: "linear-gradient(135deg, #1E3A6E 0%, #142850 100%)" }}
         >
-          {/* Lock indicator */}
           <div className="flex items-center justify-center gap-2 text-text-muted text-xs font-inter">
             <Lock size={11} strokeWidth={1.5} />
             Complete your evaluation to continue
@@ -109,19 +155,40 @@ export default function EvaluationClient() {
           </div>
 
           {/* On-chain note */}
-          <div className="flex items-start gap-2 p-3 rounded-xl bg-amber-primary/8 border border-amber-primary/20">
-            <Shield size={14} className="text-amber-primary mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+          <div
+            className="flex items-start gap-2 p-3 rounded-xl border"
+            style={
+              isFree && !publicKey
+                ? { background: "rgba(45,212,191,0.06)", borderColor: "rgba(45,212,191,0.25)" }
+                : { background: "rgba(232,184,109,0.06)", borderColor: "rgba(232,184,109,0.2)" }
+            }
+          >
+            <Shield
+              size={14}
+              className={isFree && !publicKey ? "text-teal-400" : "text-amber-primary"}
+              style={{ marginTop: 2, flexShrink: 0 }}
+              strokeWidth={1.5}
+            />
             <p className="text-text-muted text-xs font-inter leading-relaxed">
-              This attestation will be written to Solana Devnet and become part of this agent&apos;s public reputation.
+              {isFree && !publicKey
+                ? "BlockBrain is free. Connect a wallet to record your attestation on-chain, or submit anonymously."
+                : "This attestation will be written to Solana Devnet and become part of this agent\u2019s public reputation."}
             </p>
           </div>
 
+          {error && (
+            <div className="flex items-start gap-2 p-3 rounded-xl bg-red-500/10 border border-red-500/30">
+              <AlertCircle size={13} className="text-red-400 mt-0.5 flex-shrink-0" strokeWidth={1.5} />
+              <p className="text-red-400 text-xs font-inter leading-relaxed">{error}</p>
+            </div>
+          )}
+
           {/* Submit */}
           <motion.button
-            whileHover={rating > 0 ? { scale: 1.02, boxShadow: "0 0 24px rgba(232,184,109,0.35)" } : {}}
-            whileTap={rating > 0 ? { scale: 0.97 } : {}}
+            whileHover={rating > 0 && !submitting ? { scale: 1.02, boxShadow: "0 0 24px rgba(232,184,109,0.35)" } : {}}
+            whileTap={rating > 0 && !submitting ? { scale: 0.97 } : {}}
             onClick={handleSubmit}
-            disabled={rating === 0 || submitting}
+            disabled={rating === 0 || submitting || (!publicKey && !isFree)}
             className="w-full py-4 rounded-xl font-grotesk font-semibold text-navy-deepest disabled:opacity-40 disabled:cursor-not-allowed transition-all"
             style={{ background: "linear-gradient(135deg, #E8B86D, #F5D29A)" }}
           >
@@ -134,6 +201,10 @@ export default function EvaluationClient() {
                 />
                 Recording on-chain…
               </span>
+            ) : isFree && !publicKey ? (
+              "Submit Anonymously"
+            ) : !publicKey ? (
+              "Connect wallet to submit"
             ) : (
               "Submit & Record On-Chain"
             )}

@@ -1,0 +1,215 @@
+{
+  "address": "Gyu1zPoU2BXAfxAsCnQX2kgk4ktW8n7mBsjRALdaWEPt",
+  "metadata": {
+    "name": "reputation_attestation",
+    "version": "0.1.0",
+    "spec": "0.1.0"
+  },
+  "instructions": [
+    {
+      "name": "submit_attestation",
+      "docs": [
+        "Submit an on-chain attestation after a session completes.",
+        "Creates the attestation PDA, then CPIs to agent-registry to update reputation.",
+        "PDA uniqueness (attester + session_id) prevents duplicate attestations.",
+        "",
+        "comment_hash: SHA-256 of the comment text — computed on the client, only the",
+        "proof lives on-chain. This avoids storing potentially large strings on-chain."
+      ],
+      "discriminator": [
+        238,
+        220,
+        255,
+        105,
+        183,
+        211,
+        40,
+        83
+      ],
+      "accounts": [
+        {
+          "name": "attestation",
+          "docs": [
+            "One attestation per (attester, session_id) — enforced by PDA seed uniqueness."
+          ],
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  116,
+                  116,
+                  101,
+                  115,
+                  116,
+                  97,
+                  116,
+                  105,
+                  111,
+                  110
+                ]
+              },
+              {
+                "kind": "arg",
+                "path": "session_id"
+              },
+              {
+                "kind": "account",
+                "path": "attester"
+              }
+            ]
+          }
+        },
+        {
+          "name": "attester",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "agent",
+          "docs": [
+            "The agent account in agent-registry that will have its reputation updated."
+          ],
+          "writable": true
+        },
+        {
+          "name": "rep_authority",
+          "docs": [
+            "This program's authority PDA used to sign the CPI to agent-registry.",
+            "agent-registry validates: key == find_pda([b\"rep_auth\"], reputation_attestation::ID)",
+            "Only this program can produce this signer since PDAs are unique per program."
+          ],
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  114,
+                  101,
+                  112,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "agent_id",
+          "type": "string"
+        },
+        {
+          "name": "session_id",
+          "type": "string"
+        },
+        {
+          "name": "rating",
+          "type": "u8"
+        },
+        {
+          "name": "comment_hash",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        },
+        {
+          "name": "agent_type",
+          "type": "u8"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "AttestationAccount",
+      "discriminator": [
+        247,
+        195,
+        134,
+        60,
+        216,
+        249,
+        121,
+        183
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "StringTooLong",
+      "msg": "String exceeds maximum length"
+    },
+    {
+      "code": 6001,
+      "name": "InvalidRating",
+      "msg": "Rating must be between 1 and 5"
+    },
+    {
+      "code": 6002,
+      "name": "InvalidAgentType",
+      "msg": "Invalid agent type — must be 0 or 1"
+    }
+  ],
+  "types": [
+    {
+      "name": "AttestationAccount",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "attester",
+            "type": "pubkey"
+          },
+          {
+            "name": "agent_id",
+            "type": "string"
+          },
+          {
+            "name": "session_id",
+            "type": "string"
+          },
+          {
+            "name": "rating",
+            "type": "u8"
+          },
+          {
+            "name": "comment_hash",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          },
+          {
+            "name": "agent_type",
+            "type": "u8"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          }
+        ]
+      }
+    }
+  ]
+}

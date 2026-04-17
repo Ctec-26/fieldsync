@@ -93,9 +93,18 @@ export default function AgentCard({ agent, index = 0 }: Props) {
           <div className="flex items-center justify-between mt-auto pt-4 border-t border-navy-accent/20">
             <div>
               <p className="text-text-muted text-[11px] font-inter">Per session</p>
-              <p className="text-amber-primary font-grotesk font-semibold text-base">
-                {agent.priceSOL} SOL
-              </p>
+              {agent.isFree ? (
+                <span
+                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold font-inter"
+                  style={{ background: "rgba(45,212,191,0.15)", color: "#2DD4BF", border: "1px solid rgba(45,212,191,0.3)" }}
+                >
+                  ✦ Free
+                </span>
+              ) : (
+                <p className="text-amber-primary font-grotesk font-semibold text-base">
+                  {agent.priceSOL} SOL
+                </p>
+              )}
             </div>
             <motion.span
               whileHover={{ scale: 1.04 }}

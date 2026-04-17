@@ -1,4 +1,6 @@
-export type AgentId = "rwa" | "defi" | "x402";
+export type MarketplaceAgentId = "rwa" | "defi" | "x402";
+export type BlockBrainAgentId = "edu-rwa" | "edu-defi" | "edu-x402";
+export type AgentId = MarketplaceAgentId | BlockBrainAgentId;
 
 export interface AgentSpecialty {
   label: string;
@@ -19,5 +21,6 @@ export interface Agent {
   avgResponseTime: string;
   memberSince: string;
   priceSOL: number;
+  isFree?: boolean;
   introVariants: string[];
 }

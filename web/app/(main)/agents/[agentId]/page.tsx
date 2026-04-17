@@ -1,10 +1,10 @@
 import { notFound } from "next/navigation";
-import { getAgent, AGENTS_LIST } from "@/lib/agents";
+import { getAgent, AGENTS_LIST, BLOCKBRAIN_LIST } from "@/lib/agents";
 import { getAttestationsForAgent } from "@/lib/mock-attestations";
 import AgentProfileClient from "./AgentProfileClient";
 
 export function generateStaticParams() {
-  return AGENTS_LIST.map((a) => ({ agentId: a.id }));
+  return [...AGENTS_LIST, ...BLOCKBRAIN_LIST].map((a) => ({ agentId: a.id }));
 }
 
 export function generateMetadata({ params }: { params: { agentId: string } }) {

@@ -4,8 +4,11 @@ const RPC_URL =
   process.env.NEXT_PUBLIC_HELIUS_RPC ||
   clusterApiUrl("devnet");
 
+let _connection: Connection | null = null;
+
 export function getConnection(): Connection {
-  return new Connection(RPC_URL, "confirmed");
+  if (!_connection) _connection = new Connection(RPC_URL, "confirmed");
+  return _connection;
 }
 
 export function truncateAddress(address: string, chars = 4): string {

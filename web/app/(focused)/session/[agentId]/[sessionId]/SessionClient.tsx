@@ -122,7 +122,7 @@ export default function SessionClient({ agent, sessionId }: Props) {
       // Check if limit reached — route to evaluation
       const newUserCount = updatedMessages.filter((m) => m.role === "user").length;
       if (newUserCount >= MAX_MESSAGES) {
-        setTimeout(() => router.push(`/evaluation/${sessionId}`), 800);
+        setTimeout(() => router.push(`/evaluation/${sessionId}?agentId=${agent.id}`), 800);
       }
     }
   }, [input, isStreaming, remaining, messages, agent.id, sessionId, router]);
@@ -148,7 +148,7 @@ export default function SessionClient({ agent, sessionId }: Props) {
             {userMessageCount}/{MAX_MESSAGES} messages
           </div>
           <button
-            onClick={() => router.push(`/evaluation/${sessionId}`)}
+            onClick={() => router.push(`/evaluation/${sessionId}?agentId=${agent.id}`)}
             className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-navy-accent/30 text-text-muted hover:text-text-primary hover:border-navy-highlight/40 text-xs font-inter transition-colors"
           >
             <X size={12} strokeWidth={1.5} />
@@ -266,7 +266,7 @@ export default function SessionClient({ agent, sessionId }: Props) {
               <div className="text-center text-text-muted text-sm font-inter">
                 Session complete.{" "}
                 <button
-                  onClick={() => router.push(`/evaluation/${sessionId}`)}
+                  onClick={() => router.push(`/evaluation/${sessionId}?agentId=${agent.id}`)}
                   className="text-amber-primary hover:text-amber-glow underline"
                 >
                   Rate your session →

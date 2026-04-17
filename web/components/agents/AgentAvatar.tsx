@@ -1,7 +1,65 @@
 "use client";
 
+import React from "react";
 import { motion } from "framer-motion";
 import type { AgentId } from "@/types/agent";
+
+function EduRWAShape({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Open book */}
+      <path d="M40 22 L40 58" stroke="#60A5FA" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M40 22 C34 20 22 22 18 26 L18 58 C22 55 34 54 40 56" stroke="#60A5FA" strokeWidth="1.5" fill="rgba(96,165,250,0.06)" strokeLinejoin="round" />
+      <path d="M40 22 C46 20 58 22 62 26 L62 58 C58 55 46 54 40 56" stroke="#60A5FA" strokeWidth="1.5" fill="rgba(96,165,250,0.06)" strokeLinejoin="round" />
+      {/* Left page lines */}
+      <line x1="24" y1="32" x2="36" y2="31" stroke="#60A5FA" strokeWidth="0.9" strokeLinecap="round" opacity="0.6" />
+      <line x1="24" y1="37" x2="36" y2="36" stroke="#60A5FA" strokeWidth="0.9" strokeLinecap="round" opacity="0.6" />
+      <line x1="24" y1="42" x2="36" y2="41" stroke="#60A5FA" strokeWidth="0.9" strokeLinecap="round" opacity="0.4" />
+      {/* Token chain on right page */}
+      <circle cx="48" cy="32" r="4" stroke="#E8B86D" strokeWidth="1.2" fill="rgba(232,184,109,0.1)" />
+      <circle cx="57" cy="32" r="4" stroke="#60A5FA" strokeWidth="1.2" fill="rgba(96,165,250,0.08)" />
+      <line x1="52" y1="32" x2="53" y2="32" stroke="#E8B86D" strokeWidth="1.5" strokeLinecap="round" />
+      <line x1="48" y1="40" x2="57" y2="40" stroke="#60A5FA" strokeWidth="0.9" strokeLinecap="round" opacity="0.5" />
+    </svg>
+  );
+}
+
+function EduDeFiShape({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Graduation cap */}
+      <path d="M40 18 L62 28 L40 38 L18 28 Z" stroke="#2DD4BF" strokeWidth="1.5" fill="rgba(45,212,191,0.07)" strokeLinejoin="round" />
+      <path d="M62 28 L62 40" stroke="#2DD4BF" strokeWidth="1.5" strokeLinecap="round" />
+      <circle cx="62" cy="42" r="2.5" fill="#E8B86D" opacity="0.8" />
+      {/* Cap top */}
+      <line x1="40" y1="38" x2="40" y2="48" stroke="#2DD4BF" strokeWidth="1.5" strokeLinecap="round" />
+      <path d="M30 43 Q40 48 50 43" stroke="#2DD4BF" strokeWidth="1.2" fill="none" strokeLinecap="round" />
+      {/* DeFi yield bars */}
+      <rect x="24" y="56" width="5" height="8" rx="1" fill="#2DD4BF" opacity="0.5" />
+      <rect x="31" y="52" width="5" height="12" rx="1" fill="#2DD4BF" opacity="0.7" />
+      <rect x="38" y="54" width="5" height="10" rx="1" fill="#2DD4BF" opacity="0.6" />
+      <rect x="45" y="50" width="5" height="14" rx="1" fill="#E8B86D" opacity="0.7" />
+      <rect x="52" y="53" width="5" height="11" rx="1" fill="#2DD4BF" opacity="0.5" />
+    </svg>
+  );
+}
+
+function EduX402Shape({ size }: { size: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 80 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+      {/* Book spine */}
+      <rect x="16" y="18" width="36" height="46" rx="2" stroke="#C084FC" strokeWidth="1.5" fill="rgba(192,132,252,0.05)" />
+      <rect x="16" y="18" width="8" height="46" rx="2" fill="rgba(192,132,252,0.12)" stroke="#C084FC" strokeWidth="1.2" />
+      {/* x402 symbol inside book */}
+      <line x1="30" y1="30" x2="46" y2="42" stroke="#C084FC" strokeWidth="1.3" strokeLinecap="round" opacity="0.8" />
+      <line x1="46" y1="30" x2="30" y2="42" stroke="#C084FC" strokeWidth="1.3" strokeLinecap="round" opacity="0.8" />
+      <rect x="29" y="48" width="18" height="3" rx="1.5" fill="#C084FC" opacity="0.4" />
+      {/* Payment arrow emanating */}
+      <path d="M52 36 L64 36 L60 32 M64 36 L60 40" stroke="#E8B86D" strokeWidth="1.3" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="64" cy="36" r="1.5" fill="#E8B86D" opacity="0.7" />
+    </svg>
+  );
+}
 
 interface Props {
   agentId: AgentId;
@@ -81,7 +139,14 @@ function X402Shape({ size }: { size: number }) {
   );
 }
 
-const SHAPES = { rwa: RWAShape, defi: DeFiShape, x402: X402Shape };
+const SHAPES: Record<AgentId, React.ComponentType<{ size: number }>> = {
+  rwa: RWAShape,
+  defi: DeFiShape,
+  x402: X402Shape,
+  "edu-rwa": EduRWAShape,
+  "edu-defi": EduDeFiShape,
+  "edu-x402": EduX402Shape,
+};
 
 export default function AgentAvatar({ agentId, size = 80, animate = true, glitch = false }: Props) {
   const Shape = SHAPES[agentId];
