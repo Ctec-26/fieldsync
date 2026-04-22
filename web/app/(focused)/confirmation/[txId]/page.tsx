@@ -140,7 +140,12 @@ function ConfirmationContent({ txSig }: { txSig: string }) {
   );
 }
 
-export default function ConfirmationPage({ params }: { params: { txId: string } }) {
+export default async function ConfirmationPage({
+  params,
+}: {
+  params: Promise<{ txId: string }>;
+}) {
+  const { txId } = await params;
   return (
     <Suspense
       fallback={
@@ -149,7 +154,7 @@ export default function ConfirmationPage({ params }: { params: { txId: string } 
         </div>
       }
     >
-      <ConfirmationContent txSig={params.txId} />
+      <ConfirmationContent txSig={txId} />
     </Suspense>
   );
 }

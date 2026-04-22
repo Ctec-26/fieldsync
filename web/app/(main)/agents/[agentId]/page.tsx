@@ -7,8 +7,13 @@ export function generateStaticParams() {
   return [...AGENTS_LIST, ...BLOCKBRAIN_LIST].map((a) => ({ agentId: a.id }));
 }
 
-export function generateMetadata({ params }: { params: { agentId: string } }) {
-  const agent = getAgent(params.agentId);
+export async function generateMetadata({
+  params,
+}: {
+  params: Promise<{ agentId: string }>;
+}) {
+  const { agentId } = await params;
+  const agent = getAgent(agentId);
   if (!agent) return { title: "Not Found" };
   return {
     title: `${agent.name} — FieldSync`,
@@ -16,9 +21,14 @@ export function generateMetadata({ params }: { params: { agentId: string } }) {
   };
 }
 
-export default function AgentProfilePage({ params }: { params: { agentId: string } }) {
-  const agent = getAgent(params.agentId);
+export default async function AgentProfilePage({
+  params,
+}: {
+  params: Promise<{ agentId: string }>;
+}) {
+  const { agentId } = await params;
+  const agent = getAgent(agentId);
   if (!agent) notFound();
-  const attestations = getAttestationsForAgent(params.agentId);
+  const attestations = getAttestationsForAgent(agentId);
   return <AgentProfileClient agent={agent} attestations={attestations} />;
 }
