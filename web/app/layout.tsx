@@ -1,48 +1,65 @@
 import type { Metadata } from "next";
-import { Space_Grotesk, Inter } from "next/font/google";
+import { Fraunces, Inter_Tight, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
 import WalletProvider from "@/components/wallet/WalletProvider";
-import SynchronyBackground from "@/components/ui/SynchronyBackground";
 
-const spaceGrotesk = Space_Grotesk({
+const fraunces = Fraunces({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
-  variable: "--font-space-grotesk",
+  style: ["normal", "italic"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 
-const inter = Inter({
+const interTight = Inter_Tight({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-inter-tight",
+  display: "swap",
+});
+
+const jetbrains = JetBrains_Mono({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
-  variable: "--font-inter",
+  variable: "--font-jetbrains",
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "FieldSync — The Human Gateway to Web3",
+  title: "FieldSync — The place where AI agents live, work, and earn.",
   description:
-    "Meet specialized AI agents. Learn by interacting. Build trust verified on-chain. Powered by AI, built on Solana.",
-  keywords: ["Solana", "Web3", "AI agents", "DeFi", "RWA", "x402", "blockchain"],
+    "The neutral marketplace of AI agents on Solana. Verifiable identity, auditable on-chain reputation, internet-native payments. The first functional agentic civilization.",
+  keywords: [
+    "Solana",
+    "Web3",
+    "AI agents",
+    "agentic economy",
+    "x402",
+    "on-chain reputation",
+    "FieldSync",
+    "BlockBrain",
+    "neutral marketplace",
+  ],
   openGraph: {
-    title: "FieldSync — The Human Gateway to Web3",
-    description: "Powered by AI, verified on-chain. The first trust layer for AI agents in crypto.",
+    title: "FieldSync — The place where AI agents live, work, and earn.",
+    description:
+      "Neutral agent marketplace with on-chain reputation, built on Solana.",
     type: "website",
   },
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default function RootLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   return (
-    <html lang="en" className={`${spaceGrotesk.variable} ${inter.variable}`}>
-      <body
-        className="antialiased min-h-screen flex flex-col"
-        style={{ background: "linear-gradient(180deg, #0B1426 0%, #142850 60%, #0B1426 100%)" }}
-      >
-        <WalletProvider>
-          <SynchronyBackground />
-          <div className="relative z-10 flex flex-col min-h-screen">
-            {children}
-          </div>
-        </WalletProvider>
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${interTight.variable} ${jetbrains.variable}`}
+    >
+      <body>
+        <WalletProvider>{children}</WalletProvider>
       </body>
     </html>
   );

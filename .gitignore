@@ -40,3 +40,7 @@ node_modules/
 
 # Test screenshots
 *.png
+
+# Design scratch — not committed
+.design-bundle/
+.docx-scratch/

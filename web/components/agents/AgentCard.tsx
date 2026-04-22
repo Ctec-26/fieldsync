@@ -1,121 +1,63 @@
-"use client";
-
-import { motion } from "framer-motion";
 import Link from "next/link";
-import { Star, Zap, Users } from "lucide-react";
-import AgentAvatar from "./AgentAvatar";
 import type { Agent } from "@/types/agent";
+import AgentAvatar from "./AgentAvatar";
 
-interface Props {
-  agent: Agent;
-  index?: number;
-}
-
-function StarRating({ score }: { score: number }) {
+/**
+ * Legacy-compat card used by `(main)/agents/AgentsPageClient.tsx`.
+ * Render-compatible with the previous API (`agent`, `index`).
+ * A richer redesigned version will land with the /agents route rework.
+ */
+export default function AgentCard({ agent }: { agent: Agent; index?: number }) {
+  const rep = Math.round(agent.reputationScore * 20); // 0..5 → 0..100
+  const priceLabel = agent.isFree || agent.priceSOL === 0 ? "grátis" : `${agent.priceSOL}`;
   return (
-    <div className="flex items-center gap-1">
-      {[1, 2, 3, 4, 5].map((i) => (
-        <Star
-          key={i}
-          size={12}
-          strokeWidth={1.5}
-          className={i <= Math.round(score) ? "fill-amber-primary text-amber-primary" : "text-text-muted"}
-        />
-      ))}
-      <span className="text-amber-primary text-xs font-semibold font-inter ml-1">{score.toFixed(1)}</span>
-    </div>
-  );
-}
-
-export default function AgentCard({ agent, index = 0 }: Props) {
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 30 }}
-      whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, margin: "-50px" }}
-      transition={{ duration: 0.5, delay: index * 0.12, ease: "easeOut" }}
-      whileHover={{ y: -6 }}
+    <Link
+      href={`/agents/${agent.id}`}
+      className="group flex flex-col gap-3.5 rounded-[var(--radius-card-lg)] border border-fs-gray-low bg-fs-deep p-5 transition-all duration-300 hover:-translate-y-0.5 hover:border-fs-primary hover:shadow-[0_0_24px_rgba(10,108,243,0.2)]"
     >
-      <Link href={`/agents/${agent.id}`} className="block group">
-        <motion.div
-          whileHover={{ boxShadow: "0 12px 40px rgba(42,82,152,0.5), 0 0 0 1px rgba(61,126,232,0.4)" }}
-          transition={{ duration: 0.2 }}
-          className="relative overflow-hidden rounded-2xl border border-navy-accent/30 bg-gradient-to-b from-navy-secondary to-navy-primary p-6 shadow-card-base flex flex-col gap-5"
-          style={{ background: "linear-gradient(135deg, #1E3A6E 0%, #142850 100%)" }}
-        >
-          {/* Tag accent bar */}
+      <div className="flex items-start gap-3">
+        <AgentAvatar agentId={agent.id} size={56} />
+        <div className="min-w-0 flex-1">
+          <div className="font-[family-name:var(--font-inter-tight)] text-[15.5px] font-semibold leading-tight text-fs-white">
+            {agent.name}
+          </div>
+          <p className="mt-1 font-[family-name:var(--font-mono)] text-[10.5px] uppercase tracking-[0.14em] text-fs-gray-med">
+            {agent.tagline}
+          </p>
+        </div>
+      </div>
+
+      <div className="flex items-baseline justify-between gap-3">
+        <div className="relative h-1 flex-1 overflow-hidden rounded-full bg-fs-gray-low">
           <div
-            className="absolute top-0 left-0 right-0 h-[2px] rounded-t-2xl opacity-70"
-            style={{ background: `linear-gradient(90deg, transparent, ${agent.tagColor}, transparent)` }}
+            className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-fs-primary to-fs-bright"
+            style={{ width: `${rep}%` }}
           />
+        </div>
+        <div
+          className={`font-[family-name:var(--font-fraunces)] text-2xl font-medium leading-none ${
+            rep >= 90 ? "text-fs-amber" : "text-fs-white"
+          }`}
+        >
+          {rep}
+        </div>
+      </div>
 
-          {/* Avatar + name row */}
-          <div className="flex items-start justify-between">
-            <AgentAvatar agentId={agent.id} size={72} glitch />
-            <span
-              className="px-2.5 py-1 rounded-full text-[10px] font-semibold font-inter tracking-wider uppercase"
-              style={{
-                background: `${agent.tagColor}18`,
-                color: agent.tagColor,
-                border: `1px solid ${agent.tagColor}40`,
-              }}
-            >
-              {agent.id.toUpperCase()}
-            </span>
-          </div>
+      <p className="line-clamp-2 text-[12.5px] leading-relaxed text-fs-gray-hi">
+        {agent.bio}
+      </p>
 
-          {/* Name + tagline */}
-          <div>
-            <h3 className="text-text-heading font-grotesk font-semibold text-lg leading-tight mb-1">
-              {agent.name}
-            </h3>
-            <p className="text-text-muted text-sm font-inter leading-relaxed line-clamp-2">
-              {agent.tagline}
-            </p>
-          </div>
-
-          {/* Reputation */}
-          <StarRating score={agent.reputationScore} />
-
-          {/* Stats row */}
-          <div className="flex items-center gap-4 text-xs font-inter text-text-muted">
-            <span className="flex items-center gap-1.5">
-              <Users size={12} strokeWidth={1.5} />
-              {agent.totalInteractions.toLocaleString()} sessions
-            </span>
-            <span className="flex items-center gap-1.5">
-              <Zap size={12} strokeWidth={1.5} />
-              {agent.avgResponseTime}
-            </span>
-          </div>
-
-          {/* Price + CTA */}
-          <div className="flex items-center justify-between mt-auto pt-4 border-t border-navy-accent/20">
-            <div>
-              <p className="text-text-muted text-[11px] font-inter">Per session</p>
-              {agent.isFree ? (
-                <span
-                  className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold font-inter"
-                  style={{ background: "rgba(45,212,191,0.15)", color: "#2DD4BF", border: "1px solid rgba(45,212,191,0.3)" }}
-                >
-                  ✦ Free
-                </span>
-              ) : (
-                <p className="text-amber-primary font-grotesk font-semibold text-base">
-                  {agent.priceSOL} SOL
-                </p>
-              )}
-            </div>
-            <motion.span
-              whileHover={{ scale: 1.04 }}
-              whileTap={{ scale: 0.97 }}
-              className="px-4 py-2 rounded-xl bg-navy-accent/40 border border-navy-highlight/30 text-text-primary text-sm font-medium font-inter group-hover:bg-navy-highlight/20 group-hover:border-navy-highlight/60 transition-colors"
-            >
-              View Agent →
-            </motion.span>
-          </div>
-        </motion.div>
-      </Link>
-    </motion.div>
+      <div className="mt-auto flex items-center justify-between border-t border-fs-gray-low pt-2.5">
+        <div className="font-[family-name:var(--font-mono)] text-base font-medium text-fs-white">
+          {priceLabel}
+          {!agent.isFree && agent.priceSOL > 0 && (
+            <span className="ml-1 text-[11px] text-fs-gray-med">SOL · call</span>
+          )}
+        </div>
+        <span className="inline-flex h-8 items-center rounded-lg border border-fs-gray-low px-3.5 text-[12.5px] font-semibold text-fs-gray-hi transition-colors group-hover:border-fs-primary group-hover:bg-fs-primary group-hover:text-white">
+          Ver agente
+        </span>
+      </div>
+    </Link>
   );
 }

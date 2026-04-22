@@ -1,79 +1,342 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
+@custom-variant dark (&:is(.dark *));
+
+/* ============================================
+   FieldSync — design tokens
+   Seven-token palette + neutrals + BlockBrain paper + ecosystem colors
+   ============================================ */
+
+@theme {
+  /* Core palette */
+  --color-fs-void: #000010;
+  --color-fs-deep: #001040;
+  --color-fs-core: #002080;
+  --color-fs-primary: #0a6cf3;
+  --color-fs-bright: #0098fe;
+  --color-fs-cyan: #1bf0fe;
+  --color-fs-amber: #f6f6e2;
+
+  /* Neutrals */
+  --color-fs-white: #ffffff;
+  --color-fs-gray-hi: #c9d2d4;
+  --color-fs-gray-med: #7b8fa1;
+  --color-fs-gray-low: #3a4558;
+
+  /* BlockBrain (light surface) */
+  --color-fs-paper: #f5f8fb;
+  --color-fs-ink: #0a1524;
+
+  /* Ecosystem accents (only for tags / tiny indicators) */
+  --color-fs-eco-defi: #3ddbb4;
+  --color-fs-eco-rwa: #d4b254;
+  --color-fs-eco-edu: #7a9fff;
+  --color-fs-eco-data: #9d7fff;
+  --color-fs-eco-create: #ff8b7a;
+  --color-fs-eco-prod: #5ecaeb;
+  --color-fs-eco-infra: #8fa4b8;
+  --color-fs-eco-health: #a3e4a6;
+
+  /* Font families — bridged to next/font CSS variables */
+  --font-display: var(--font-fraunces), "Playfair Display", serif;
+  --font-sans: var(--font-inter-tight), system-ui, sans-serif;
+  --font-mono: var(--font-jetbrains), ui-monospace, monospace;
+
+  /* FieldSync radii */
+  --radius-card: 12px;
+  --radius-card-lg: 16px;
+  --radius-chip: 999px;
+  --radius-tip: 6px;
+}
+
+/* ============================================
+   shadcn/ui token bridge — wire shadcn's semantic tokens
+   to FieldSync values so shadcn components (Button, Card, etc.)
+   render in-palette out of the box.
+   ============================================ */
+
+@theme inline {
+  --font-heading: var(--font-display);
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --radius-sm: calc(var(--radius) * 0.6);
+  --radius-md: calc(var(--radius) * 0.8);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+}
+
+/* Dark is the default for FieldSync. BlockBrain sections opt-in
+   to light via a `.fs-light` scope (added in Zone 7 / /blockbrain). */
 :root {
-  --background: #0B1426;
-  --foreground: #F0EFE8;
+  color-scheme: dark;
+  --background: #000010;
+  --foreground: #c9d2d4;
+  --card: #001040;
+  --card-foreground: #ffffff;
+  --popover: #001040;
+  --popover-foreground: #ffffff;
+  --primary: #0a6cf3;
+  --primary-foreground: #ffffff;
+  --secondary: #001040;
+  --secondary-foreground: #c9d2d4;
+  --muted: #001040;
+  --muted-foreground: #7b8fa1;
+  --accent: #1bf0fe;
+  --accent-foreground: #000010;
+  --destructive: #ef4444;
+  --border: #3a4558;
+  --input: #3a4558;
+  --ring: #0a6cf3;
+  --radius: 0.625rem;
 }
 
-html {
-  scroll-behavior: smooth;
+.fs-light {
+  color-scheme: light;
+  --background: #f5f8fb;
+  --foreground: #0a1524;
+  --card: #ffffff;
+  --card-foreground: #0a1524;
+  --popover: #ffffff;
+  --popover-foreground: #0a1524;
+  --primary: #0a6cf3;
+  --primary-foreground: #ffffff;
+  --secondary: #eef2f7;
+  --secondary-foreground: #0a1524;
+  --muted: #eef2f7;
+  --muted-foreground: #6c7a8c;
+  --accent: #0a6cf3;
+  --accent-foreground: #ffffff;
+  --border: #dde5ef;
+  --input: #dde5ef;
+  --ring: #0a6cf3;
 }
 
-body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: var(--font-inter), system-ui, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+/* ============================================
+   Base layer
+   ============================================ */
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: var(--font-sans);
+  }
+  body {
+    background: var(--color-fs-void);
+    color: var(--color-fs-gray-hi);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+  }
+  ::selection {
+    background: rgba(10, 108, 243, 0.32);
+    color: #fff;
+  }
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--color-fs-void);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--color-fs-gray-low);
+    border-radius: 3px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--color-fs-primary);
+  }
 }
 
-/* Wallet adapter UI overrides */
+/* ============================================
+   Reveal-on-scroll primitive (used by <Reveal />)
+   ============================================ */
+
+.reveal {
+  opacity: 0;
+  transform: translateY(24px);
+  transition:
+    opacity 640ms cubic-bezier(0.16, 1, 0.3, 1),
+    transform 640ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+}
+.reveal.d1 { transition-delay: 80ms; }
+.reveal.d2 { transition-delay: 160ms; }
+.reveal.d3 { transition-delay: 240ms; }
+.reveal.d4 { transition-delay: 320ms; }
+.reveal.d5 { transition-delay: 400ms; }
+.reveal.d6 { transition-delay: 480ms; }
+
+/* ============================================
+   Shared motion keyframes — named fs-* to avoid collision
+   ============================================ */
+
+@keyframes fs-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.35; }
+}
+@keyframes fs-breathe {
+  /* translateZ(0) forces a compositor layer so the continuous scale
+     animation runs on the GPU and doesn't repaint surrounding pixels. */
+  0%, 100% { transform: scale(1) translateZ(0); }
+  50%      { transform: scale(1.008) translateZ(0); }
+}
+@keyframes fs-core-pulse {
+  0%, 100% { transform: scale(1); filter: drop-shadow(0 0 4px rgba(246, 246, 226, 0.7)); }
+  50%      { transform: scale(1.06); filter: drop-shadow(0 0 10px rgba(246, 246, 226, 0.95)); }
+}
+@keyframes fs-shimmer {
+  0%, 100% { transform: translateX(-100%) translateZ(0); }
+  45%, 55% { transform: translateX(100%) translateZ(0); }
+}
+@keyframes fs-scroll-ticker {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+@keyframes fs-drop {
+  0%     { transform: scaleY(0); transform-origin: top; }
+  60%    { transform: scaleY(1); transform-origin: top; }
+  60.1%  { transform-origin: bottom; }
+  100%   { transform: scaleY(0); transform-origin: bottom; }
+}
+@keyframes fs-slide-in {
+  from { opacity: 0; transform: translateY(-20px) translateZ(0); }
+  to   { opacity: 1; transform: translateY(0) translateZ(0); }
+}
+@keyframes fs-node-blink {
+  0%, 100% { opacity: 0.3; }
+  50%      { opacity: 1; }
+}
+@keyframes fs-ask-pulse {
+  0%, 100% { filter: drop-shadow(0 0 8px rgba(246, 246, 226, 0.35)); }
+  50%      { filter: drop-shadow(0 0 14px rgba(246, 246, 226, 0.6)); }
+}
+@keyframes fs-orbit {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
+/* ============================================
+   Logo animation (FieldSyncMark) — three pillars orbit at
+   different speeds, amber core pulses at 2s
+   ============================================ */
+
+.fs-mark .fs-pillar-a,
+.fs-mark .fs-pillar-b,
+.fs-mark .fs-pillar-c,
+.fs-mark .fs-core {
+  transform-box: view-box;
+  transform-origin: 50% 50%;
+}
+.fs-mark .fs-pillar-a { animation: fs-orbit 8s linear infinite; }
+.fs-mark .fs-pillar-b { animation: fs-orbit 6s linear infinite reverse; }
+.fs-mark .fs-pillar-c { animation: fs-orbit 4s linear infinite; }
+.fs-mark .fs-core     { animation: fs-core-pulse 2s ease-in-out infinite; }
+
+/* Ecosystem-tinted pills + avatar gradients for reuse across
+   the home (agents grid, trending, feed). */
+.tag-defi   { background: rgba(61,219,180,0.12);  color: var(--color-fs-eco-defi); }
+.tag-rwa    { background: rgba(212,178,84,0.12);  color: var(--color-fs-eco-rwa); }
+.tag-edu    { background: rgba(122,159,255,0.12); color: var(--color-fs-eco-edu); }
+.tag-data   { background: rgba(157,127,255,0.12); color: var(--color-fs-eco-data); }
+.tag-create { background: rgba(255,139,122,0.12); color: var(--color-fs-eco-create); }
+.tag-prod   { background: rgba(94,202,235,0.12);  color: var(--color-fs-eco-prod); }
+.tag-infra  { background: rgba(143,164,184,0.12); color: var(--color-fs-eco-infra); }
+.tag-health { background: rgba(163,228,166,0.12); color: var(--color-fs-eco-health); }
+
+.grad-defi   { background: linear-gradient(135deg, #0a6cf3, #3ddbb4); }
+.grad-rwa    { background: linear-gradient(135deg, #002080, #d4b254); }
+.grad-edu    { background: linear-gradient(135deg, #0a6cf3, #7a9fff); }
+.grad-data   { background: linear-gradient(135deg, #002080, #9d7fff); }
+.grad-create { background: linear-gradient(135deg, #0a6cf3, #ff8b7a); }
+.grad-prod   { background: linear-gradient(135deg, #0098fe, #5ecaeb); }
+.grad-infra  { background: linear-gradient(135deg, #002080, #8fa4b8); }
+.grad-health { background: linear-gradient(135deg, #0a6cf3, #a3e4a6); }
+
+/* Feed / inline micro-styles reused across zones */
+.fs-up { color: #3ddbb4; font-family: var(--font-mono); }
+.fs-price { font-family: var(--font-mono); color: var(--color-fs-bright); font-weight: 500; }
+.fs-pulse-dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--color-fs-cyan);
+  box-shadow: 0 0 10px var(--color-fs-cyan);
+  animation: fs-pulse 1.6s ease-in-out infinite;
+  vertical-align: 1px;
+  margin-right: 6px;
+}
+.fs-pulse-dot--green { background: #3ddbb4; box-shadow: 0 0 10px #3ddbb4; }
+.fs-pulse-dot--amber { background: var(--color-fs-amber); box-shadow: 0 0 10px var(--color-fs-amber); }
+
+/* ============================================
+   Reduced motion — honor user preference
+   ============================================ */
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  #hero-canvas {
+    display: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+/* ============================================
+   Wallet adapter modal overrides (match FieldSync palette)
+   ============================================ */
+
 .wallet-adapter-button {
   display: none !important;
 }
-
 .wallet-adapter-modal-wrapper {
-  background: #142850 !important;
-  border: 1px solid rgba(42, 82, 152, 0.4) !important;
+  background: var(--color-fs-deep) !important;
+  border: 1px solid var(--color-fs-gray-low) !important;
   border-radius: 16px !important;
 }
-
 .wallet-adapter-modal-title {
-  color: #F0EFE8 !important;
-  font-family: var(--font-space-grotesk), sans-serif !important;
+  color: var(--color-fs-white) !important;
+  font-family: var(--font-display) !important;
 }
-
 .wallet-adapter-modal-list .wallet-adapter-button {
   display: flex !important;
-  background: rgba(30, 58, 110, 0.6) !important;
-  border: 1px solid rgba(42, 82, 152, 0.3) !important;
+  background: rgba(10, 108, 243, 0.08) !important;
+  border: 1px solid var(--color-fs-gray-low) !important;
   border-radius: 12px !important;
-  color: #F0EFE8 !important;
+  color: var(--color-fs-gray-hi) !important;
 }
-
 .wallet-adapter-modal-list .wallet-adapter-button:hover {
-  background: rgba(42, 82, 152, 0.5) !important;
-  border-color: rgba(61, 126, 232, 0.5) !important;
-}
-
-/* Scrollbar */
-::-webkit-scrollbar {
-  width: 6px;
-}
-::-webkit-scrollbar-track {
-  background: #0B1426;
-}
-::-webkit-scrollbar-thumb {
-  background: #2A5298;
-  border-radius: 3px;
-}
-::-webkit-scrollbar-thumb:hover {
-  background: #3D7EE8;
-}
-
-/* Selection */
-::selection {
-  background: rgba(232, 184, 109, 0.25);
-  color: #F0EFE8;
-}
-
-@layer utilities {
-  .text-balance {
-    text-wrap: balance;
-  }
-  .font-600 {
-    font-weight: 600;
-  }
+  background: rgba(10, 108, 243, 0.18) !important;
+  border-color: var(--color-fs-primary) !important;
+  color: var(--color-fs-white) !important;
 }
